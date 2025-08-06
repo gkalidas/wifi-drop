@@ -74,9 +74,9 @@ wifi-drop/
 ```
 
 ### 👨‍💻 Requirements
-Python 3.7+
-Works on Linux, macOS, or Windows
-A modern browser on your phone (no app needed)
+- Python 3.7+
+- Works on Linux, macOS, or Windows
+- A modern browser on your phone (no app needed)
 
 ### 📄 License
 This project is licensed under the MIT License.
