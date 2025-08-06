@@ -29,7 +29,7 @@ Here’s how to set up and run `wifi-drop` locally:
 
 ### 📁 Step 1: Create a Python Virtual Environment (optional but recommended)
 
-```bash
+```
 mkdir -p ~/envs
 python3 -m venv ~/envs/env_python_wifi_drop
 source ~/envs/env_python_wifi_drop/bin/activate
@@ -39,12 +39,15 @@ source ~/envs/env_python_wifi_drop/bin/activate
 pip install -r requirements.txt
 ```
 ### 🚀 Step 3: Start the Server
+```
 python3 server.py
-
+```
 You should see a message like:
+
 Server started: http://192.168.1.42:8000
 
 ### 📱 Step 4: Open That Link From Your Phone
+
 Connect your laptop and phone to the same Wi-Fi or mobile hotspot.
 On your phone, open any browser (Chrome, Safari, etc.)
 Visit the printed link (e.g., http://192.168.1.42:8000)
@@ -58,7 +61,8 @@ Upload directly — offline and private.
 ✅ No mobile data is used.
 
 
-📁 Folder Structure
+### 📁 Folder Structure
+
 wifi-drop/
 ├── server.py              # Python server (FastAPI or HTTP handler)
 ├── static/
@@ -69,19 +73,17 @@ wifi-drop/
 └── README.md
 
 
-👨‍💻 Requirements
+### 👨‍💻 Requirements
 Python 3.7+
-
 Works on Linux, macOS, or Windows
-
 A modern browser on your phone (no app needed)
 
-📄 License
+### 📄 License
 This project is licensed under the MIT License.
 
-🤝 Contributing
+### 🤝 Contributing
 Pull requests are welcome!
 If you’ve got an idea for a feature, bug fix, or improvement — open an issue or submit a PR.
 
-💬 Credits & Inspiration
+### 💬 Credits & Inspiration
 Inspired by the need to move files quickly without third-party apps, cables, or internet.
