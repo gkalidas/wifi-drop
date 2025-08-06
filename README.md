@@ -34,16 +34,16 @@ mkdir -p ~/envs
 python3 -m venv ~/envs/env_python_wifi_drop
 source ~/envs/env_python_wifi_drop/bin/activate
 
-📦 Step 2: Install Dependencies
+### 📦 Step 2: Install Dependencies
 pip install -r requirements.txt
 
-🚀 Step 3: Start the Server
+### 🚀 Step 3: Start the Server
 python3 server.py
 
 You should see a message like:
 Server started: http://192.168.1.42:8000
 
-📱 Step 4: Open That Link From Your Phone
+### 📱 Step 4: Open That Link From Your Phone
 Connect your laptop and phone to the same Wi-Fi or mobile hotspot.
 On your phone, open any browser (Chrome, Safari, etc.)
 Visit the printed link (e.g., http://192.168.1.42:8000)
