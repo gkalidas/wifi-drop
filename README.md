@@ -33,10 +33,11 @@ Here’s how to set up and run `wifi-drop` locally:
 mkdir -p ~/envs
 python3 -m venv ~/envs/env_python_wifi_drop
 source ~/envs/env_python_wifi_drop/bin/activate
-
+```
 ### 📦 Step 2: Install Dependencies
+```
 pip install -r requirements.txt
-
+```
 ### 🚀 Step 3: Start the Server
 python3 server.py
 
