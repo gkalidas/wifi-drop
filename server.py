@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import os
 
-UPLOAD_DIR = os.path.expanduser("~/Uploads")
+UPLOAD_DIR = os.path.join(os.getcwd(), "Uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = FastAPI()
