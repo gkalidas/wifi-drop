@@ -64,12 +64,16 @@ Upload directly — offline and private.
 ### 📁 Folder Structure
 ```
 wifi-drop/
-├── server.py              # Python server (FastAPI or HTTP handler)
+├── server.py               # Entry point, starts the FastAPI app
+├── config.py               # Constants like UPLOAD_DIR, PORT, etc.
+├── stats.py                # Handles stats tracking (load/save/update)
+├── upload_handler.py       # Contains all upload and check-existing logic
+├── utils.py                # Helper functions like get_local_ip, QR code
 ├── static/
-│   └── index.html         # Upload page UI
-├── uploads/               # Folder where uploaded files are stored
-├── requirements.txt       # Python dependencies
-├── .gitignore
+│   └── index.html          # Upload UI
+├── Uploads/                # Where uploaded files are saved
+├── upload_stats.json       # Stats file (generated at runtime)
+├── requirements.txt
 └── README.md
 ```
 
