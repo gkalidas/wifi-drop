@@ -62,7 +62,7 @@ Upload directly — offline and private.
 
 
 ### 📁 Folder Structure
-
+```
 wifi-drop/
 ├── server.py              # Python server (FastAPI or HTTP handler)
 ├── static/
@@ -71,7 +71,7 @@ wifi-drop/
 ├── requirements.txt       # Python dependencies
 ├── .gitignore
 └── README.md
-
+```
 
 ### 👨‍💻 Requirements
 Python 3.7+
