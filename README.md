@@ -81,6 +81,26 @@ wifi-drop/
 ### 📄 License
 This project is licensed under the MIT License.
 
+## 🚀 What Can Be Improved / Future Ideas
+
+- ✅ Add file size limit to prevent huge uploads  
+- ✅ Show list of uploaded files directly on the webpage  
+- ✅ Add drag-and-drop file support (improves mobile UX)  
+- 🔒 Add password or PIN protection for basic security  
+- Package as a desktop app (.desktop for Linux, etc.)  
+- Add full authentication (login system)  
+- Improve upload progress bar and per-file timing  
+- ⚡ Upload files in parallel for speed (more accurate time estimates needed)  
+- 📝 Show list of uploaded filenames on the UI  
+- 🎨 Enhance UI/UX on mobile with more responsive design  
+- 💾 Let user choose upload destination folder via the webpage (with security)  
+- Turn this into a Progressive Web App (PWA) for offline use and installation  
+- Add upload cancellation or retry mechanisms  
+- Zip files before uploading to save bandwidth  
+- Auto-detect and display the correct IP address to connect easily  
+- Implement queuing and resuming uploads in offline mode using Service Workers or similar tech  
+
+
 ### 🤝 Contributing
 Pull requests are welcome!
 If you’ve got an idea for a feature, bug fix, or improvement — open an issue or submit a PR.
