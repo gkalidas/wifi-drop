@@ -1,0 +1,86 @@
+⚡ Avg Speed: 1.57 MB/s
+
+# this is after adding frontend code with time
+📊 Uploaded 58 file(s)
+📦 443.13 MB in 264.34 sec
+⚡ Avg Speed: 1.68 MB/s
+
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 15.71 sec
+⚡ Avg Speed: 1.62 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 16.18 sec
+⚡ Avg Speed: 1.57 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 17.87 sec
+⚡ Avg Speed: 1.43 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 15.54 sec
+⚡ Avg Speed: 1.64 MB/s
+
+📊 Uploaded 3 file(s)
+📦 20.42 MB in 12.77 sec
+⚡ Avg Speed: 1.60 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 53.06 sec
+⚡ Avg Speed: 0.48 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 45.44 sec
+⚡ Avg Speed: 0.56 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 15.24 sec
+⚡ Avg Speed: 1.67 MB/s
+
+📊 Uploaded 12 file(s)
+📦 39.19 MB in 41.17 sec
+⚡ Avg Speed: 0.95 MB/s
+
+📊 Uploaded 6 file(s)
+📦 25.48 MB in 27.32 sec
+⚡ Avg Speed: 0.93 MB/s
+
+📊 Uploaded 14 file(s)
+📦 44.84 MB in 5.96 sec
+⚡ Avg Speed: 7.53 MB/s
+
+
+📊 Uploaded 9 file(s)
+📦 36.61 MB in 71.12 sec
+⚡ Avg Speed: 0.51 MB/s
+
+#######################
+2 files
+#######################
+
+📊 Uploaded 9 file(s)
+📦 36.61 MB in 25.57 sec
+⚡ Avg Speed: 1.43 MB/s
+
+📊 Uploaded 9 file(s)
+📦 36.61 MB in 29.60 sec
+⚡ Avg Speed: 1.24 MB/s
+
+#######################
+3 files
+#######################
+📊 Uploaded 9 file(s)
+📦 36.61 MB in 30.43 sec
+⚡ Avg Speed: 1.20 MB/s
+
+📊 Uploaded 9 file(s)
+📦 36.61 MB in 103.30 sec
+⚡ Avg Speed: 0.35 MB/s
+
+#######################
+laptop
+#######################
+📊 Uploaded 42 file(s)
+📦 134.52 MB in 21.00 sec
+⚡ Avg Speed: 6.41 MB/s

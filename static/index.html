@@ -2,174 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart File Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>File Upload with Progress</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-      background-color: #f9f9f9;
+      margin: 20px;
     }
 
-    .container {
-      max-width: 100%;
-      width: 100%;
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    #progress-container {
+      display: flex;
+      flex-direction: column-reverse;
     }
 
-    h2 {
-      font-size: 1.5em;
-      margin-top: 0;
-    }
-
-    input[type="file"] {
-      width: 100%;
-    }
-
-    button {
-      width: 100%;
+    .file-upload {
+      margin: 10px 0;
       padding: 10px;
-      font-size: 1em;
-      margin-top: 10px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-
-    #status {
-      margin-top: 16px;
-      font-weight: bold;
-    }
-
-    #progressContainer {
-      width: 100%;
-      background: #eee;
       border: 1px solid #ccc;
       border-radius: 5px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      background-color: #f3f3f3;
+      height: 15px;
+      border-radius: 5px;
       overflow: hidden;
-      height: 25px;
-      margin-top: 10px;
+      margin-top: 5px;
     }
 
-    #progressBar {
+    .progress-bar-inner {
       height: 100%;
+      background-color: #4caf50;
       width: 0%;
-      background: #4caf50;
-      transition: width 0.3s ease;
-      text-align: center;
-      color: white;
-      line-height: 25px;
-      font-weight: bold;
-      white-space: nowrap;
+      transition: width 0.2s ease;
     }
 
-    #fileTimes {
-      margin-top: 10px;
-      font-size: 0.9em;
-      max-height: 150px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 8px;
-      background: #fafafa;
-      border-radius: 4px;
-      word-wrap: break-word;
+    .status {
+      font-size: 12px;
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Select files to upload</h2>
-    <input type="file" id="fileInput" multiple /><br />
-    <button onclick="uploadFiles()">Upload</button>
+  <h2>Upload Files to Local Server</h2>
 
-    <div id="status"></div>
-    <div id="progressContainer" style="display: none;">
-      <div id="progressBar">0%</div>
-    </div>
-    <div id="fileTimes"></div>
-  </div>
+  <input type="file" id="fileInput" multiple />
+  <button onclick="uploadFiles()">Upload</button>
+
+  <div id="progress-container"></div>
 
   <script>
-    const status = document.getElementById('status');
-    const progressBar = document.getElementById('progressBar');
-    const progressContainer = document.getElementById('progressContainer');
-    const fileTimesDiv = document.getElementById('fileTimes');
+    function uploadFiles() {
+      const files = document.getElementById('fileInput').files;
+      const container = document.getElementById('progress-container');
 
-    async function uploadFiles() {
-      const input = document.getElementById('fileInput');
-      const files = Array.from(input.files);
-      if (files.length === 0) {
-        alert("No files selected");
-        return;
-      }
-
-      // Reset UI
-      status.innerText = "";
-      fileTimesDiv.innerText = "";
-      progressBar.style.width = '0%';
-      progressBar.innerText = '0%';
-      progressContainer.style.display = 'block';
-
-      // Step 1: Send metadata to server
-      const metadataList = files.map(file => ({
-        filename: file.name,
-        size: file.size
-      }));
-
-      const checkResponse = await fetch('/check-existing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(metadataList)
-      });
-
-      const { to_upload, skipped } = await checkResponse.json();
-      const toUploadSet = new Set(to_upload);
-
-      if (skipped.length > 0) {
-        status.innerText = `Skipped: ${skipped.join(', ')}\n`;
-      }
-
-      let uploaded = 0;
-      const totalToUpload = to_upload.length;
-
-      if (totalToUpload === 0) {
-        status.innerText += `✅ All files already uploaded.`;
-        progressContainer.style.display = 'none';
-        return;
-      }
-
-      for (const file of files) {
-        if (!toUploadSet.has(file.name)) continue;
-
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append('file', file);
 
-        const start = performance.now();
-        await fetch('/upload', { method: 'POST', body: formData });
-        const elapsed = ((performance.now() - start) / 1000).toFixed(2);
+        // Create a file upload block
+        const fileBlock = document.createElement('div');
+        fileBlock.className = 'file-upload';
 
-        uploaded++;
+        const title = document.createElement('div');
+        title.textContent = file.name;
 
-        const percent = Math.round((uploaded / totalToUpload) * 100);
-        progressBar.style.width = percent + '%';
-        progressBar.innerText = percent + '%';
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
 
-        status.innerText = `Uploaded ${uploaded} / ${totalToUpload} file(s)`;
-        fileTimesDiv.innerText += `${file.name}: ${elapsed} seconds\n`;
+        const progressInner = document.createElement('div');
+        progressInner.className = 'progress-bar-inner';
+        progressBar.appendChild(progressInner);
+
+        const status = document.createElement('div');
+        status.className = 'status';
+        status.textContent = 'Waiting...';
+
+        fileBlock.appendChild(title);
+        fileBlock.appendChild(progressBar);
+        fileBlock.appendChild(status);
+
+        container.appendChild(fileBlock);
+
+        // Start uploading
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
+
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            progressInner.style.width = percentComplete + '%';
+            status.textContent = `Uploading... ${percentComplete}%`;
+          }
+        };
+
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            status.textContent = '✅ Uploaded Successfully';
+          } else {
+            status.textContent = '❌ Upload Failed';
+            progressInner.style.backgroundColor = 'red';
+          }
+        };
+
+        xhr.onerror = function () {
+          status.textContent = '❌ Upload Failed (Network)';
+          progressInner.style.backgroundColor = 'red';
+        };
+
+        xhr.send(formData);
       }
-
-      status.innerText += `\n✅ Upload complete.`;
     }
   </script>
 </body>

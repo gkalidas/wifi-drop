@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart File Upload</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+
+    .container {
+      max-width: 100%;
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      font-size: 1.5em;
+      margin-top: 0;
+    }
+
+    input[type="file"] {
+      width: 100%;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      margin-top: 10px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    #status {
+      margin-top: 16px;
+      font-weight: bold;
+    }
+
+    #progressContainer {
+      width: 100%;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+      height: 25px;
+      margin-top: 10px;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+      transition: width 0.3s ease;
+      text-align: center;
+      color: white;
+      line-height: 25px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    #fileTimes {
+      margin-top: 10px;
+      font-size: 0.9em;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 8px;
+      background: #fafafa;
+      border-radius: 4px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Select files to upload</h2>
+    <input type="file" id="fileInput" multiple /><br />
+    <button onclick="uploadFiles()">Upload</button>
+
+    <div id="status"></div>
+    <div id="progressContainer" style="display: none;">
+      <div id="progressBar">0%</div>
+    </div>
+    <div id="fileTimes"></div>
+  </div>
+
+  <input type="file" id="fileInput" multiple>
+  <div id="progressBars"></div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const progressBarsContainer = document.getElementById('progressBars');
+
+  fileInput.addEventListener('change', async () => {
+    const files = Array.from(fileInput.files);
+    for (const file of files) {
+      await uploadFile(file);
+    }
+  });
+
+  async function uploadFile(file) {
+    const progressBarWrapper = document.createElement('div');
+    progressBarWrapper.style.marginBottom = '10px';
+
+    const label = document.createElement('div');
+    label.textContent = `Uploading: ${file.name}`;
+    progressBarWrapper.appendChild(label);
+
+    const progressBar = document.createElement('progress');
+    progressBar.value = 0;
+    progressBar.max = 100;
+    progressBarWrapper.appendChild(progressBar);
+    progressBarsContainer.appendChild(progressBarWrapper);
+
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload'); // Change if needed
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percent = (e.loaded / e.total) * 100;
+          progressBar.value = percent;
+        }
+      });
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          label.textContent = `✅ Uploaded: ${file.name}`;
+          progressBar.value = 100;
+          resolve();
+        } else {
+          label.textContent = `❌ Failed: ${file.name}`;
+          reject();
+        }
+      };
+
+      xhr.onerror = () => {
+        label.textContent = `❌ Error uploading: ${file.name}`;
+        reject();
+      };
+
+      const formData = new FormData();
+      formData.append('file', file);
+      xhr.send(formData);
+    });
+  }
+</script>
+
+</body>
+</html>
