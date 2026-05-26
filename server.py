@@ -1,21 +1,21 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import time
 
-from config import UPLOAD_DIR
-from utils import get_local_ip
+from config import UPLOAD_DIR, CERT_FILE, KEY_FILE
+from utils import get_local_ip, generate_self_signed_cert
 from stats import load_stats, upload_stats, print_stats
 from upload_handler import check_existing_files, handle_file_upload
-from middleware import TimerMiddleware  # ✅ NEW
+from middleware import TimerMiddleware
 
 app = FastAPI()
 app.add_middleware(TimerMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Use exact IP in production
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -31,6 +31,12 @@ async def serve_ui():
     with open("static/index.html") as f:
         return f.read()
 
+# Served from root so the Service Worker's scope covers the entire origin
+@app.get("/sw.js")
+async def serve_sw():
+    with open("static/sw.js", "rb") as f:
+        return Response(f.read(), media_type="application/javascript")
+
 @app.post("/check-existing")
 async def check_existing(files: list[FileMetadata]):
     to_upload, skipped = check_existing_files(files)
@@ -45,20 +51,24 @@ if __name__ == "__main__":
 
     load_stats()
     print_stats()
-    local_ip = get_local_ip()
-    url = f"http://{local_ip}:8000"
 
-    # total_mb = upload_stats["total_bytes"] / 1024 / 1024
-    # total_time = upload_stats["total_time"]
-    # avg_speed = total_mb / total_time if total_time > 0 else 0
+    local_ip = get_local_ip()
+    generate_self_signed_cert(local_ip, CERT_FILE, KEY_FILE)
+
+    url = f"https://{local_ip}:8000"
 
     border = "*" * 80
     print(border)
     print(f"🚀 Server running at: {url}")
     print(f"📁 Uploads saved to: {UPLOAD_DIR}")
-    # print(f"📊 Uploaded {upload_stats['total_files']} file(s)")
-    # print(f"📦 {total_mb:.2f} MB in {total_time:.2f} sec")
-    # print(f"⚡ Avg Speed: {avg_speed:.2f} MB/s")
+    print(f"⚠️  First visit: tap 'Advanced' → 'Proceed' to accept the self-signed cert")
     print(border)
 
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "server:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        ssl_keyfile=KEY_FILE,
+        ssl_certfile=CERT_FILE,
+    )

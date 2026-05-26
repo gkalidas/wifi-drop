@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>File Upload with Progress</title>
+  <title>wifi-drop</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,6 +41,13 @@
     .status {
       font-size: 12px;
       margin-top: 4px;
+      color: #555;
+    }
+
+    #bg-fetch-note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 6px;
     }
   </style>
 </head>
@@ -49,20 +56,84 @@
 
   <input type="file" id="fileInput" multiple />
   <button onclick="uploadFiles()">Upload</button>
+  <div id="bg-fetch-note"></div>
 
   <div id="progress-container"></div>
 
   <script>
-    function uploadFiles() {
+    // fetchId -> { progressInner, status } — used to match SW completion messages to UI blocks
+    const bgFetchMap = new Map();
+    let swRegistration = null;
+
+    window.addEventListener('load', async () => {
+      if ('serviceWorker' in navigator) {
+        try {
+          swRegistration = await navigator.serviceWorker.register('/sw.js');
+          await navigator.serviceWorker.ready;
+          navigator.serviceWorker.addEventListener('message', onSwMessage);
+        } catch (e) {
+          console.warn('Service worker registration failed:', e);
+        }
+      }
+    });
+
+    const MAX_CONCURRENT = 3;
+
+    function onSwMessage(event) {
+      const { type, id } = event.data;
+      const refs = bgFetchMap.get(id);
+      if (!refs) return;
+      bgFetchMap.delete(id);
+
+      if (type === 'BG_FETCH_SUCCESS') {
+        refs.progressInner.style.width = '100%';
+        refs.status.textContent = '✅ Uploaded Successfully';
+      } else {
+        refs.status.textContent = '❌ Upload Failed';
+        refs.progressInner.style.backgroundColor = 'red';
+      }
+      refs.resolve();
+    }
+
+    async function uploadFiles() {
       const files = document.getElementById('fileInput').files;
       const container = document.getElementById('progress-container');
+      const note = document.getElementById('bg-fetch-note');
+
+      const reg = swRegistration || (await navigator.serviceWorker.ready.catch(() => null));
+      const useBgFetch = reg && 'backgroundFetch' in reg;
+
+      note.textContent = useBgFetch
+        ? '📡 Background uploads active — safe to lock screen or switch apps'
+        : '⚠️ Background Fetch not supported — keep this tab open during upload';
+
+      const metadata = Array.from(files).map(f => ({ filename: f.name, size: f.size }));
+      let toUpload = new Set(metadata.map(f => f.filename));
+      try {
+        const res = await fetch('/check-existing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(metadata),
+        });
+        const data = await res.json();
+        toUpload = new Set(data.to_upload);
+
+        for (const name of data.skipped) {
+          const fileBlock = document.createElement('div');
+          fileBlock.className = 'file-upload';
+          fileBlock.innerHTML = `<div>${name}</div><div class="status">⏭️ Already exists — skipped</div>`;
+          container.appendChild(fileBlock);
+        }
+      } catch (e) {
+        console.warn('check-existing failed, uploading all:', e);
+      }
+
+      const executing = new Set();
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const formData = new FormData();
-        formData.append('file', file);
+        if (!toUpload.has(file.name)) continue;
 
-        // Create a file upload block
         const fileBlock = document.createElement('div');
         fileBlock.className = 'file-upload';
 
@@ -78,42 +149,94 @@
 
         const status = document.createElement('div');
         status.className = 'status';
-        status.textContent = 'Waiting...';
+        status.textContent = 'Queued...';
 
         fileBlock.appendChild(title);
         fileBlock.appendChild(progressBar);
         fileBlock.appendChild(status);
-
         container.appendChild(fileBlock);
 
-        // Start uploading
+        const uploadFn = useBgFetch
+          ? () => uploadWithBgFetch(file, reg, progressInner, status)
+          : () => uploadWithXhr(file, progressInner, status);
+
+        const p = uploadFn().finally(() => executing.delete(p));
+        executing.add(p);
+
+        if (executing.size >= MAX_CONCURRENT) {
+          await Promise.race(executing);
+        }
+      }
+
+      await Promise.all(executing);
+    }
+
+    // Returns a Promise that resolves when the SW confirms completion
+    function uploadWithBgFetch(file, reg, progressInner, status) {
+      return new Promise(async (resolve) => {
+        const fetchId = `upload-${file.name}-${Date.now()}`;
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const bgFetch = await reg.backgroundFetch.fetch(
+            fetchId,
+            [new Request('/upload', { method: 'POST', body: formData })],
+            { title: `Uploading ${file.name}`, uploadTotal: file.size }
+          );
+
+          bgFetchMap.set(fetchId, { progressInner, status, resolve });
+          status.textContent = 'Uploading (background-safe)...';
+
+          bgFetch.addEventListener('progress', () => {
+            if (!bgFetch.uploadTotal) return;
+            const pct = Math.round((bgFetch.uploaded / bgFetch.uploadTotal) * 100);
+            progressInner.style.width = pct + '%';
+            status.textContent = `Uploading... ${pct}%`;
+          });
+        } catch (err) {
+          console.warn('Background fetch failed, falling back to XHR:', err);
+          await uploadWithXhr(file, progressInner, status);
+          resolve();
+        }
+      });
+    }
+
+    // Returns a Promise that resolves when the XHR completes
+    function uploadWithXhr(file, progressInner, status) {
+      return new Promise((resolve) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/upload', true);
 
-        xhr.upload.onprogress = function (e) {
+        xhr.upload.onprogress = function(e) {
           if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100);
-            progressInner.style.width = percentComplete + '%';
-            status.textContent = `Uploading... ${percentComplete}%`;
+            const pct = Math.round((e.loaded / e.total) * 100);
+            progressInner.style.width = pct + '%';
+            status.textContent = `Uploading... ${pct}%`;
           }
         };
 
-        xhr.onload = function () {
+        xhr.onload = function() {
           if (xhr.status === 200) {
             status.textContent = '✅ Uploaded Successfully';
           } else {
             status.textContent = '❌ Upload Failed';
             progressInner.style.backgroundColor = 'red';
           }
+          resolve();
         };
 
-        xhr.onerror = function () {
+        xhr.onerror = function() {
           status.textContent = '❌ Upload Failed (Network)';
           progressInner.style.backgroundColor = 'red';
+          resolve();
         };
 
         xhr.send(formData);
-      }
+      });
     }
   </script>
 </body>

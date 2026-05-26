@@ -15,17 +15,19 @@ It works entirely in the browser and stores files directly on your computer.
 
 ## 🚀 Features
 
-- ✅ Works offline (Wi-Fi or mobile hotspot)  
-- ✅ No app or installation needed on phone  
-- ✅ Mobile-friendly UI  
-- ✅ Skips files that already exist  
-- ✅ Shows upload progress and time per file
+- ✅ Works offline (Wi-Fi or mobile hotspot)
+- ✅ No app or installation needed on phone
+- ✅ Mobile-friendly UI
+- ✅ Skips files that already exist (checked before upload begins)
+- ✅ Shows upload progress per file
+- ✅ Up to 3 files upload in parallel automatically
+- ✅ Background uploads — safe to lock your screen or switch apps (Android Chrome)
+- ✅ HTTPS — encrypted transfers, required for background upload support
+- ✅ Falls back to standard upload on browsers without Background Fetch (iOS Safari, Firefox)
 
 ---
 
 ## 🛠️ How to Set Up
-
-Here’s how to set up and run `wifi-drop` locally:
 
 ### 📁 Step 1: Create a Python Virtual Environment (optional but recommended)
 
@@ -34,80 +36,106 @@ mkdir -p ~/envs
 python3 -m venv ~/envs/env_python_wifi_drop
 source ~/envs/env_python_wifi_drop/bin/activate
 ```
+
 ### 📦 Step 2: Install Dependencies
+
 ```
 pip install -r requirements.txt
 ```
+
 ### 🚀 Step 3: Start the Server
+
 ```
 python3 server.py
 ```
+
 You should see a message like:
 
-Server started: http://192.168.1.42:8000
+```
+🚀 Server running at: https://192.168.1.42:8000
+📁 Uploads saved to: /Users/you/wifi-drop/Uploads
+⚠️  First visit: tap 'Advanced' → 'Proceed' to accept the self-signed cert
+```
+
+A self-signed TLS certificate is generated automatically in `certs/` on first run.
 
 ### 📱 Step 4: Open That Link From Your Phone
 
-Connect your laptop and phone to the same Wi-Fi or mobile hotspot.
-On your phone, open any browser (Chrome, Safari, etc.)
-Visit the printed link (e.g., http://192.168.1.42:8000)
-Select files → Upload → Done ✅
+Connect your laptop and phone to the same Wi-Fi or mobile hotspot.  
+On your phone, open Chrome (or any browser) and visit the printed `https://` link.
 
-💡 Tip: Use Mobile Hotspot Without Internet
-You don’t need internet. Just:
-Enable hotspot on your phone.
-Connect your laptop to it.
-Upload directly — offline and private.
-✅ No mobile data is used.
+**First visit only:** the browser will show a certificate warning because the cert is self-signed.
+- **Android Chrome:** tap Advanced → Proceed to [IP] (unsafe)
+- **iOS Safari:** tap Show Details → visit this website
 
+After accepting once, uploads work normally — including in the background.
 
-### 📁 Folder Structure
+💡 **Tip: Use Mobile Hotspot Without Internet**  
+You don't need internet. Just enable hotspot on your phone, connect your laptop to it, and upload directly — offline and private. No mobile data is used.
+
+---
+
+## 📁 Folder Structure
+
 ```
 wifi-drop/
-├── server.py               # Entry point, starts the FastAPI app
-├── config.py               # Constants like UPLOAD_DIR, PORT, etc.
-├── stats.py                # Handles stats tracking (load/save/update)
-├── upload_handler.py       # Contains all upload and check-existing logic
-├── utils.py                # Helper functions like get_local_ip, QR code
+├── server.py               # Entry point — FastAPI app, routes, HTTPS startup
+├── config.py               # Constants: UPLOAD_DIR, chunk size, cert paths
+├── upload_handler.py       # Upload logic (async writes) and duplicate check
+├── middleware.py           # Request timing and stats middleware
+├── context.py              # Per-request UUID via contextvars
+├── stats.py                # Upload stats tracking (load/save/print)
+├── utils.py                # Local IP detection, TLS cert generation
 ├── static/
-│   └── index.html          # Upload UI
-├── Uploads/                # Where uploaded files are saved
-├── upload_stats.json       # Stats file (generated at runtime)
+│   ├── index.html          # Upload UI (Background Fetch + XHR fallback)
+│   └── sw.js               # Service Worker for background upload notifications
+├── certs/                  # Auto-generated TLS cert (gitignored)
+├── Uploads/                # Where uploaded files are saved (gitignored)
+├── upload_stats.json       # Persistent stats (generated at runtime)
 ├── requirements.txt
 └── README.md
 ```
 
-### 👨‍💻 Requirements
-- Python 3.7+
-- Works on Linux, macOS, or Windows
-- A modern browser on your phone (no app needed)
+---
 
-### 📄 License
+## 👨‍💻 Requirements
+
+- Python 3.8+
+- Works on Linux, macOS, or Windows
+- **Android Chrome** for full background upload support
+- Any modern browser for standard uploads (iOS Safari, Firefox, etc.)
+
+---
+
+## 📄 License
+
 This project is licensed under the MIT License.
+
+---
 
 ## 🚀 What Can Be Improved / Future Ideas
 
-- ✅ Add file size limit to prevent huge uploads  
-- ✅ Show list of uploaded files directly on the webpage  
-- ✅ Add drag-and-drop file support (improves mobile UX)  
-- 🔒 Add password or PIN protection for basic security  
-- Package as a desktop app (.desktop for Linux, etc.)  
-- Add full authentication (login system)  
-- Improve upload progress bar and per-file timing  
-- ⚡ Upload files in parallel for speed (more accurate time estimates needed)  
-- 📝 Show list of uploaded filenames on the UI  
-- 🎨 Enhance UI/UX on mobile with more responsive design  
-- 💾 Let user choose upload destination folder via the webpage (with security)  
-- Turn this into a Progressive Web App (PWA) for offline use and installation  
-- Add upload cancellation or retry mechanisms  
-- Zip files before uploading to save bandwidth  
-- Auto-detect and display the correct IP address to connect easily  
-- Implement queuing and resuming uploads in offline mode using Service Workers or similar tech  
+- ✅ Upload files in parallel for speed
+- ✅ Background uploads using Service Workers + Background Fetch API
+- ✅ Auto-detect and display the correct IP address
+- ✅ Skip files that already exist
+- Add file size limit to prevent huge uploads
+- Show list of already-uploaded files on the webpage
+- Add drag-and-drop file support (improves mobile UX)
+- 🔒 Add password or PIN protection for basic security
+- Add upload cancellation or retry mechanisms
+- Zip files before uploading to save bandwidth
+- Let user choose upload destination folder via the webpage (with security)
+- Turn this into a full Progressive Web App (PWA) with install prompt and offline manifest
+- Package as a desktop app (.desktop for Linux, etc.)
 
+---
 
 ### 🤝 Contributing
-Pull requests are welcome!
-If you’ve got an idea for a feature, bug fix, or improvement — open an issue or submit a PR.
+
+Pull requests are welcome!  
+If you've got an idea for a feature, bug fix, or improvement — open an issue or submit a PR.
 
 ### 💬 Credits & Inspiration
+
 Inspired by the need to move files quickly without third-party apps, cables, or internet.
